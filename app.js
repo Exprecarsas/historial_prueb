@@ -1,91 +1,114 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // ====== Config ======
+    const SCANNER_DELAY_MS = 400; // tiempo de espera tras última tecla del escáner
+
+    // ====== Estado ======
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let codigosCorrectos = []; // Códigos escaneados correctamente
-    let barcodeTimeout; // Variable para almacenar el temporizador
-    let audioContext; // Contexto de audio para generar tonos
+    let barcodeTimeout = null; // Variable para almacenar el temporizador
+    let audioContext = null; // Contexto de audio para generar tonos
 
+    // ====== Audio ======
     // Inicializar contexto de audio para generar tonos
     function initializeAudioContext() {
         if (!audioContext) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.debug('AudioContext no disponible:', e);
+            }
         }
     }
 
-    // Generar un tono con Web Audio API
-    function playTone(frequency, duration, type = 'sine', volume = 1.5) {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        oscillator.type = type;
-        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-        gainNode.gain.value = volume;
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        oscillator.start();
-        setTimeout(() => {
-            oscillator.stop();
-        }, duration);
+    // Generar un tono con Web Audio API (con guardas para evitar errores)
+    function playTone(frequency, duration, type = 'sine', volume = 0.3) {
+        try {
+            if (!audioContext) initializeAudioContext();
+            if (!audioContext) return; // si sigue bloqueado por permisos, salir silenciosamente
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            gainNode.gain.value = volume;
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.start();
+            setTimeout(() => {
+                oscillator.stop();
+                oscillator.disconnect();
+                gainNode.disconnect();
+            }, duration);
+        } catch (e) {
+            console.debug('No se pudo reproducir tono:', e);
+        }
     }
 
     // Habilitar contexto de audio al hacer clic en el primer evento (para dispositivos móviles)
     document.body.addEventListener('click', initializeAudioContext, { once: true });
 
+    // ====== Persistencia ======
     // Guardar progreso comprimido en localStorage
     function saveProgressToLocalStorage() {
-        const progressData = {
-            globalUnitsScanned: globalUnitsScanned,
-            codigosCorrectos: codigosCorrectos // Guardar códigos correctos
-        };
-        // Comprimir los datos antes de guardarlos
-        const compressedData = LZString.compress(JSON.stringify(progressData));
-        localStorage.setItem('scanProgress', compressedData); // Guardar los datos comprimidos en localStorage
-        console.log("Datos comprimidos guardados en localStorage:", compressedData); // Verificar en consola los datos guardados
+        try {
+            const progressData = {
+                globalUnitsScanned: globalUnitsScanned,
+                codigosCorrectos: codigosCorrectos // Guardar códigos correctos
+            };
+            const compressedData = LZString.compress(JSON.stringify(progressData));
+            localStorage.setItem('scanProgress', compressedData);
+            // console.log("Datos comprimidos guardados en localStorage:", compressedData);
+        } catch (e) {
+            console.warn('No se pudo guardar en localStorage:', e);
+        }
     }
 
     // Restaurar progreso desde localStorage y descomprimir los datos
     function restoreProgressFromLocalStorage() {
-        const savedData = localStorage.getItem('scanProgress');
-        if (savedData) {
-            // Descomprimir los datos antes de usarlos
+        try {
+            const savedData = localStorage.getItem('scanProgress');
+            if (!savedData) {
+                console.log("No se encontraron datos guardados en localStorage.");
+                return;
+            }
             const decompressedData = LZString.decompress(savedData);
-            const parsedData = JSON.parse(decompressedData);
+            if (!decompressedData) return; // si está corrupto, salir
+            const parsedData = JSON.parse(decompressedData) || {};
 
             globalUnitsScanned = parsedData.globalUnitsScanned || 0; // Restaurar contador global
-            codigosCorrectos = parsedData.codigosCorrectos || []; // Restaurar códigos correctos
+            codigosCorrectos = Array.isArray(parsedData.codigosCorrectos) ? parsedData.codigosCorrectos : []; // Restaurar códigos correctos
 
             // Actualizar la interfaz con el contador restaurado
             updateGlobalCounter();
-            console.log("Datos descomprimidos y restaurados de localStorage:", parsedData); // Depuración
+
             // Volver a mostrar los códigos restaurados en la tabla
+            limpiarTabla();
             codigosCorrectos.forEach((item, index) => {
                 agregarCodigoATabla(item.codigo, item.hora, index + 1);
             });
-        } else {
-            console.log("No se encontraron datos guardados en localStorage.");
+        } catch (e) {
+            console.warn('No se pudo restaurar localStorage; limpiando clave:', e);
+            localStorage.removeItem('scanProgress');
         }
     }
 
-    // Llamar a esta función al cargar la página
-    restoreProgressFromLocalStorage();
+    // ====== UI ======
+    function getTablaTbody() {
+        const tabla = document.getElementById('tabla-codigos');
+        return tabla ? tabla.getElementsByTagName('tbody')[0] : null;
+    }
 
-    // Manejar el evento de entrada en el campo de código de barras
-    document.getElementById('barcodeInput').addEventListener('input', (event) => {
-        const barcodeValue = document.getElementById('barcodeInput').value.trim();
-
-        // Limpiar el temporizador anterior si el usuario sigue escribiendo
-        clearTimeout(barcodeTimeout);
-
-        // Si el campo no está vacío, esperar 1 segundo y luego simular el "Enter"
-        if (barcodeValue !== '') {
-            barcodeTimeout = setTimeout(() => {
-                handleBarcodeScan(barcodeValue); // Llamar a la función que procesa el escaneo
-                clearBarcodeInput(); // Limpiar el campo de entrada
-            }, 1000); // Esperar 1 segundo
+    function updateGlobalCounter() {
+        const globalCounterElement = document.getElementById('global-counter');
+        if (globalCounterElement) {
+            globalCounterElement.innerText = `Unidades Escaneadas: ${globalUnitsScanned}`;
         }
-    });
+    }
 
     // Función para limpiar el campo de código de barras (reutilizada)
     function clearBarcodeInput() {
-        document.getElementById('barcodeInput').value = '';
+        const el = document.getElementById('barcodeInput');
+        if (el) el.value = '';
     }
 
     // Función para formatear la hora en formato de 12 horas con AM/PM y segundos
@@ -98,28 +121,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
         horas = horas % 12;
         horas = horas ? horas : 12; // El "0" se convierte en "12"
-        minutos = minutos < 10 ? '0' + minutos : minutos; // Añadir un 0 delante si los minutos son menores a 10
-        segundos = segundos < 10 ? '0' + segundos : segundos; // Añadir un 0 delante si los segundos son menores a 10
+        minutos = minutos < 10 ? '0' + minutos : minutos;
+        segundos = segundos < 10 ? '0' + segundos : segundos;
 
-        const horaFormateada = horas + ':' + minutos + ':' + segundos + ' ' + ampm;
-        return horaFormateada;
-    }
-
-    function updateGlobalCounter() {
-        const globalCounterElement = document.getElementById('global-counter');
-        globalCounterElement.innerText = `Unidades Escaneadas: ${globalUnitsScanned}`;
+        return `${horas}:${minutos}:${segundos} ${ampm}`;
     }
 
     // Llamar a esta función cada vez que se escanee un código correctamente
     updateGlobalCounter();
 
+    // ====== Lógica de escaneo ======
     // Función para manejar el escaneo de códigos (sin validación)
     function handleBarcodeScan(scannedCode) {
+        const code = String(scannedCode || '').trim();
+        if (!code) return;
+
         const currentTime = obtenerHoraFormateada(); // Obtener la hora formateada en 12 horas AM/PM
 
         // Registrar el código en el historial sin validar
         codigosCorrectos.push({
-            codigo: scannedCode,
+            codigo: code,
             hora: currentTime // Almacenar la hora de escaneo
         });
 
@@ -128,22 +149,25 @@ document.addEventListener('DOMContentLoaded', function () {
         // Actualizar el contador global en la interfaz
         updateGlobalCounter();
 
-        // Mostrar retroalimentación visual y sonora de éxito
-        playTone(440, 200, 'sine'); // Tono de éxito
+        // Mostrar retroalimentación sonora de éxito
+        playTone(880, 120, 'sine', 0.25); // Tono de éxito (más corto/suave)
 
         // Guardar el progreso después de escanear o ingresar un código
         saveProgressToLocalStorage();
 
         // Añadir el código escaneado a la tabla
-        agregarCodigoATabla(scannedCode, currentTime, codigosCorrectos.length);
+        agregarCodigoATabla(code, currentTime, codigosCorrectos.length);
 
         // Limpiar el campo de entrada
         clearBarcodeInput();
     }
+
     // Función para agregar un código a la tabla
     function agregarCodigoATabla(codigo, hora, numeroFila) {
-        const tabla = document.getElementById('tabla-codigos').getElementsByTagName('tbody')[0];
-        const nuevaFila = tabla.insertRow(); // Insertar una nueva fila al final de la tabla
+        const tbody = getTablaTbody();
+        if (!tbody) return;
+
+        const nuevaFila = tbody.insertRow(); // Insertar una nueva fila al final de la tabla
 
         // Insertar las celdas correspondientes (Número, Código, Hora)
         const celdaNumero = nuevaFila.insertCell(0);
@@ -151,97 +175,170 @@ document.addEventListener('DOMContentLoaded', function () {
         const celdaHora = nuevaFila.insertCell(2);
 
         // Asignar los valores a las celdas
-        celdaNumero.innerHTML = numeroFila; // El número será el tamaño del array + 1
-        celdaCodigo.innerHTML = codigo;
-        celdaHora.innerHTML = hora;
+        celdaNumero.textContent = numeroFila; // El número será el tamaño del array + 1
+        celdaCodigo.textContent = codigo;
+        celdaHora.textContent = hora;
     }
-
-    // Mostrar el modal para ingresar datos cuando se hace clic en "Descargar"
-    document.getElementById('abrir-modal').addEventListener('click', () => {
-        const modal = document.getElementById('modal');
-        modal.style.display = 'flex'; // Mostrar el modal
-        document.getElementById('fecha').value = new Date().toLocaleDateString(); // Poner la fecha actual
-    });
-
-
-    // Cerrar el modal cuando se hace clic en el botón "Cerrar"
-    document.getElementById('cerrar-modal').addEventListener('click', () => {
-        const modal = document.getElementById('modal');
-        modal.style.display = 'none'; // Ocultar el modal
-    });
-
-    document.getElementById('terminar-proceso').addEventListener('click', function () {
-        // Mostrar confirmación antes de continuar
-        const confirmacion = confirm("¿Estás seguro de que deseas finalizar el proceso? Esto eliminará todos los datos escaneados.");
-
-        if (confirmacion) {
-            // Si el usuario confirma, eliminar los datos
-            localStorage.removeItem('scanProgress'); // Limpiar localStorage
-
-            // Vaciar los arrays de códigos correctos e incorrectos
-
-            globalUnitsScanned = 0;
-            codigosCorrectos = []; // Vaciar los códigos correctos
-
-            // Actualizar la interfaz de usuario
-            updateGlobalCounter();
-            // Vaciar la tabla de códigos escaneados
-            limpiarTabla();
-            // Guardar el estado limpio en localStorage (opcional si quieres guardar el estado vacío)
-            saveProgressToLocalStorage();
-
-            alert('Proceso finalizado. Los datos se han eliminado.');
-        } else {
-            // Si el usuario cancela, no hacer nada
-            console.log('El usuario canceló la finalización del proceso.');
-        }
-    });
 
     // Función para limpiar la tabla
     function limpiarTabla() {
-        const tabla = document.getElementById('tabla-codigos').getElementsByTagName('tbody')[0];
-        while (tabla.rows.length > 0) {
-            tabla.deleteRow(0); // Eliminar cada fila de la tabla
+        const tbody = getTablaTbody();
+        if (!tbody) return;
+        while (tbody.rows.length > 0) {
+            tbody.deleteRow(0); // Eliminar cada fila de la tabla
         }
     }
 
-    // Generar reporte en Excel solo con el historial de códigos escaneados
-    document.getElementById('generar-reporte').addEventListener('click', () => {
-        const placa = document.getElementById('placa').value;
-        const remitente = document.getElementById('remitente').value;
-        const fecha = document.getElementById('fecha').value;
+    // ====== Listeners de UI ======
+    // Manejar el evento de entrada en el campo de código de barras (debounce para pistola)
+    const inputEl = document.getElementById('barcodeInput');
+    if (inputEl) {
+        inputEl.addEventListener('input', () => {
+            const barcodeValue = inputEl.value.trim();
 
-        if (!placa || !remitente) {
-            alert("Por favor, completa todos los campos.");
-            return;
-        }
+            // Limpiar el temporizador anterior si el usuario sigue escribiendo
+            if (barcodeTimeout) clearTimeout(barcodeTimeout);
 
-        const reportData = [
-            ['Placa de Vehículo', placa],
-            ['Remitente', remitente],
-            ['Fecha de Descargue', fecha],
-            [],
-            ['Código Escaneado', 'Hora de Escaneo']
-        ];
-
-        // Agregar los códigos escaneados al reporte
-        codigosCorrectos.forEach((item, index) => {
-            reportData.push([index + 1, item.codigo, item.hora]);
+            // Si el campo no está vacío, esperar SCANNER_DELAY_MS y simular Enter
+            if (barcodeValue !== '') {
+                barcodeTimeout = setTimeout(() => {
+                    handleBarcodeScan(barcodeValue);
+                    clearBarcodeInput();
+                }, SCANNER_DELAY_MS);
+            }
         });
 
-        const ws = XLSX.utils.aoa_to_sheet(reportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Historial Escaneo');
-    // Reemplazar espacios y caracteres especiales en el nombre de archivo
-        const remitenteCleaned = remitente.replace(/[^a-zA-Z0-9]/g, '_');
-        const fechaCleaned = fecha.replace(/\//g, '-'); // Cambiar / por - en la fecha
+        // Soporte si el escáner envía Enter al final
+        inputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (barcodeTimeout) clearTimeout(barcodeTimeout);
+                handleBarcodeScan(inputEl.value);
+            }
+        });
+    }
 
-    // Nombre de archivo personalizado con remitente y fecha
-        const fileName = `reporte_${remitenteCleaned}_${fechaCleaned}.xlsx`;
+    // Mostrar el modal para ingresar datos cuando se hace clic en "Descargar"
+    const btnAbrir = document.getElementById('abrir-modal');
+    if (btnAbrir) {
+        btnAbrir.addEventListener('click', () => {
+            const modal = document.getElementById('modal');
+            if (modal) modal.style.display = 'flex'; // Mostrar el modal
 
-        XLSX.writeFile(wb, fileName);
+            const fechaEl = document.getElementById('fecha');
+            if (fechaEl) {
+                // si es <input type="date"> usa yyyy-mm-dd
+                if (fechaEl.type === 'date') {
+                    const d = new Date();
+                    const pad = (n) => (n < 10 ? '0' + n : n);
+                    fechaEl.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+                } else {
+                    fechaEl.value = new Date().toLocaleDateString();
+                }
+            }
+        });
+    }
 
-        alert('Reporte generado correctamente.');
-        document.getElementById('modal').style.display = 'none';
-    });
+    // Cerrar el modal cuando se hace clic en el botón "Cerrar"
+    const btnCerrar = document.getElementById('cerrar-modal');
+    if (btnCerrar) {
+        btnCerrar.addEventListener('click', () => {
+            const modal = document.getElementById('modal');
+            if (modal) modal.style.display = 'none'; // Ocultar el modal
+        });
+    }
+
+    const btnTerminar = document.getElementById('terminar-proceso');
+    if (btnTerminar) {
+        btnTerminar.addEventListener('click', function () {
+            // Mostrar confirmación antes de continuar
+            const confirmacion = confirm("¿Estás seguro de que deseas finalizar el proceso? Esto eliminará todos los datos escaneados.");
+
+            if (confirmacion) {
+                // Cancelar temporizador pendiente
+                if (barcodeTimeout) {
+                    clearTimeout(barcodeTimeout);
+                    barcodeTimeout = null;
+                }
+
+                // Si el usuario confirma, eliminar los datos
+                localStorage.removeItem('scanProgress'); // Limpiar localStorage
+
+                // Vaciar arrays y contador
+                globalUnitsScanned = 0;
+                codigosCorrectos = [];
+
+                // Actualizar la interfaz de usuario
+                updateGlobalCounter();
+                limpiarTabla();
+
+                // Guardar el estado limpio en localStorage (opcional)
+                saveProgressToLocalStorage();
+
+                alert('Proceso finalizado. Los datos se han eliminado.');
+            } else {
+                console.log('El usuario canceló la finalización del proceso.');
+            }
+        });
+    }
+
+    // Generar reporte en Excel solo con el historial de códigos escaneados
+    const btnReporte = document.getElementById('generar-reporte');
+    if (btnReporte) {
+        btnReporte.addEventListener('click', () => {
+            const placaEl = document.getElementById('placa');
+            const remitenteEl = document.getElementById('remitente');
+            const fechaEl = document.getElementById('fecha');
+
+            const placa = placaEl ? placaEl.value.trim() : '';
+            const remitente = remitenteEl ? remitenteEl.value.trim() : '';
+            const fecha = fechaEl ? fechaEl.value.trim() : '';
+
+            if (!placa || !remitente) {
+                alert("Por favor, completa todos los campos.");
+                return;
+            }
+            if (!codigosCorrectos.length) {
+                alert("No hay códigos para exportar.");
+                return;
+            }
+
+            const reportData = [
+                ['Placa de Vehículo', placa],
+                ['Remitente', remitente],
+                ['Fecha de Descargue', fecha || new Date().toLocaleDateString()],
+                [],
+                // Encabezados alineados con los datos que se agregan abajo:
+                ['N°', 'Código Escaneado', 'Hora de Escaneo']
+            ];
+
+            // Agregar los códigos escaneados al reporte
+            codigosCorrectos.forEach((item, index) => {
+                reportData.push([index + 1, item.codigo, item.hora]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(reportData);
+            // Anchos de columna sugeridos
+            ws['!cols'] = [{ wch: 5 }, { wch: 30 }, { wch: 16 }];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Historial Escaneo');
+
+            // Reemplazar espacios y caracteres especiales en el nombre de archivo
+            const remitenteCleaned = (remitente || '').replace(/[^a-zA-Z0-9\-_.]/g, '_');
+            const fechaCleaned = (fecha || new Date().toLocaleDateString()).replace(/\//g, '-'); // Cambiar / por -
+
+            // Nombre de archivo personalizado con remitente y fecha
+            const fileName = `reporte_${remitenteCleaned}_${fechaCleaned}.xlsx`;
+
+            XLSX.writeFile(wb, fileName);
+
+            alert('Reporte generado correctamente.');
+            const modal = document.getElementById('modal');
+            if (modal) modal.style.display = 'none';
+        });
+    }
+
+    // ====== Inicio ======
+    restoreProgressFromLocalStorage();
 });
