@@ -1,0 +1,21 @@
+{
+  "name": "historial de Unidades Escaneadas",
+  "short_name": "Historial Unidades",
+  "description": "App para gestionar el historial del escaneo de unidades.",
+  "start_url": "/historial/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#cc414d",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

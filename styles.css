@@ -1,0 +1,282 @@
+/* Estilos generales para todos los dispositivos */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+}
+
+/* Estilo para el encabezado y la información de escaneo */
+#main-content {
+    margin-bottom: 20px;
+}
+
+#logo-exprecar img {
+    margin-bottom: 10px;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+/* Ajustar el contador de unidades escaneadas */
+h2#global-counter {
+    background-color: #cc414d;
+    color: white;
+    padding: 10px 40px; /* Aumenta el espacio a los lados */
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: inline-block; /* Ajusta el ancho al contenido */
+    font-size: 1.5rem; /* Tamaño de fuente equilibrado */
+    text-align: center;
+    max-width: 80%; /* Esto permite que tenga un tamaño más grande, pero no ocupa todo el ancho */
+}
+
+
+/* Campo de entrada y botón de escaneo */
+#barcodeInput {
+    padding: 10px;
+    font-size: 16px;
+    width: 70%;
+    max-width: 400px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#start-scanning {
+    background-color: #cc414d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+#start-scanning:hover {
+    background-color: #b33a40;
+}
+
+/* Botón de abrir la cámara (oculto por defecto) */
+#btn-abrir-camara {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+}
+
+#btn-abrir-camara img {
+    width: 70px;
+    height: 70px;
+}
+
+/* Tabla para mostrar los códigos escaneados */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 16px;
+    text-align: center;
+    background-color: #fff;
+}
+
+table th, table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+thead {
+    background-color: #b42e39;
+    color: white;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #bddb92ce;
+}
+
+/* Estilos para botones */
+button {
+    padding: 10px;
+    font-size: 16px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #cc414d;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #b33a40;
+}
+
+/* Botón para abrir modal (Descargar) */
+#abrir-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #4CAF50;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+#abrir-modal i {
+    margin-left: 5px;
+}
+
+#abrir-modal:hover {
+    background-color: #45a049;
+}
+
+/* Botón para terminar proceso */
+#terminar-proceso {
+    background-color: #cc414d;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+#terminar-proceso:hover {
+    background-color: #b33a40;
+}
+
+/* Modal para la información de la descarga */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 400px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.modal-content button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.modal-content button#cerrar-modal {
+    background-color: #cc414d;
+}
+
+.modal-content button#cerrar-modal:hover {
+    background-color: #b33a40;
+}
+
+.modal-content button#generar-reporte {
+    background-color: #4CAF50;
+}
+
+.modal-content button#generar-reporte:hover {
+    background-color: #45a049;
+}
+
+/* Estilos responsivos para pantallas pequeñas */
+@media (max-width: 768px) {
+    #barcodeInput {
+        width: 90%;
+    }
+
+    button {
+        width: 90%;
+        margin: 5px auto;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    #abrir-modal {
+        right: 5px;
+    }
+
+    .modal-content {
+        width: 90%;
+    }
+}
+
+/* Estilos para el contenedor del escáner */
+#scanner-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    display: none;
+}
+
+/* Video del escáner */
+#scanner-video {
+    width: 90%;
+    max-width: 600px;
+    height: auto;
+    border: 3px solid #ffffff;
+    border-radius: 10px;
+}
+
+/* Cuadro de enfoque para el escáner */
+#focus-box {
+    position: absolute;
+    border: 4px dashed #00ff00;
+    width: 250px;
+    height: 250px;
+    box-sizing: border-box;
+    pointer-events: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10000;
+}
+/* En pantallas pequeñas (menores a 768px), reducir el tamaño del botón */
+@media (max-width: 768px) {
+    #abrir-modal {
+        top: 70px; /* Mueve el botón hacia abajo */
+        right: 10px;
+        padding: 6px; /* Reduce el padding para que sea más pequeño */
+        font-size: 12px; /* Reduce el tamaño de fuente */
+        width: 80px; /* Cambia el ancho del botón */
+    }
+
+    #abrir-modal i {
+        font-size: 12px; /* Ajusta el tamaño del ícono */
+    }
+}
+
