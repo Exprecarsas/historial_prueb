@@ -47,11 +47,10 @@ h2#global-counter{
 }
 
 /* =========================
-   Entrada y botón de cámara
+   Entrada
    ========================= */
 #barcodeInput{
   width:min(680px, 92vw);
-  max-width: 680px;
   height:48px;
   padding:0 14px;
   font-size:16px;
@@ -65,30 +64,6 @@ h2#global-counter{
   border-color:#93c5fd;
   box-shadow:0 0 0 4px var(--ring);
 }
-
-#start-scanning{
-  margin-left:10px;
-  height:48px;
-  padding:0 18px;
-  background:var(--brand);
-  color:#fff;
-  border:0;
-  border-radius:12px;
-  font-size:16px;
-  font-weight:600;
-  cursor:pointer;
-  transition: filter .15s, transform .02s;
-}
-#start-scanning:hover{ filter:brightness(1.03); }
-#start-scanning:active{ transform: translateY(1px); }
-
-#btn-abrir-camara{
-  display:none;
-  position:absolute;
-  top:10px; right:10px;
-  z-index:1000;
-}
-#btn-abrir-camara img{ width:70px; height:70px; }
 
 /* =========================
    Tabla historial
@@ -128,10 +103,11 @@ button{
 button:hover{ filter:brightness(1.03); }
 button:active{ transform: translateY(1px); }
 
-/* abrir modal (arriba derecha) */
+/* Botón Enviar (arriba derecha, siempre visible) */
 #abrir-modal{
-  position:absolute;
-  top:10px; right:10px;
+  position:fixed;
+  top:12px; right:12px;
+  z-index:2000;
   background:var(--primary);
   padding:10px 14px;
   font-size:15px;
@@ -156,7 +132,7 @@ button:active{ transform: translateY(1px); }
   align-items:center; justify-content:center;
   background:rgba(0,0,0,.45);
   padding:28px;
-  z-index:1000;
+  z-index:3000;                 /* por encima de todo */
 }
 .modal-content{
   width:min(560px, 92vw);
@@ -203,12 +179,12 @@ button:active{ transform: translateY(1px); }
   cursor: default;
 }
 
-/* Si por accidente queda como type="date", ocultamos el icono: */
+/* Si por accidente queda como type="date", ocultamos el icono */
 .modal-content input[type="date"]::-webkit-calendar-picker-indicator{
   opacity:0; display:none; pointer-events:none;
 }
 
-/* Select más moderno con caret */
+/* Select con caret */
 .modal-content select{
   appearance: none;
   background-image: url('data:image/svg+xml;utf8,<svg fill="%236b7280" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/></svg>');
@@ -233,36 +209,6 @@ button:active{ transform: translateY(1px); }
 .modal-content #generar-reporte:hover{ background:var(--primary-dark); }
 .modal-content #cerrar-modal{ background:var(--danger); }
 .modal-content #cerrar-modal:hover{ background:var(--danger-dark); }
-
-/* =========================
-   Escáner a pantalla completa
-   ========================= */
-#scanner-container{
-  position:fixed; inset:0;
-  width:100vw; height:100vh;
-  background:rgba(0,0,0,.9);
-  display:none;
-  align-items:center; justify-content:center;
-  z-index:9999;
-}
-#scanner-video{
-  width:90%;
-  max-width:600px;
-  height:auto;
-  border:3px solid #fff;
-  border-radius:12px;
-  box-shadow:0 12px 28px rgba(0,0,0,.35);
-}
-#focus-box{
-  position:absolute;
-  border:4px dashed #00ff00;
-  width:250px; height:250px;
-  box-sizing:border-box;
-  pointer-events:none;
-  top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  z-index:10000;
-}
 
 /* =========================
    Responsive

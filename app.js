@@ -141,15 +141,49 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // ====== Modal ======
+  function setFechaHoySoloLectura() {
+    const fechaEl = document.getElementById('fecha');
+    if (!fechaEl) return;
+    const d = new Date();
+    const pad = (n) => (n < 10 ? '0' + n : String(n));
+    // dd/mm/aaaa
+    fechaEl.value = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  }
+
+  function openModal() {
+    const modal = document.getElementById('modal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    setFechaHoySoloLectura();
+  }
+
+  function closeModal() {
+    const modal = document.getElementById('modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+  }
+
   const btnAbrir = document.getElementById('abrir-modal');
+  if (btnAbrir) {
+    btnAbrir.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    });
+  }
 
   const btnCerrar = document.getElementById('cerrar-modal');
   if (btnCerrar) {
-    btnCerrar.addEventListener('click', () => {
-      const modal = document.getElementById('modal');
-      if (modal) modal.style.display = 'none';
+    btnCerrar.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeModal();
     });
   }
+
+  // Cerrar con tecla ESC (extra)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
 
   // ====== Terminar proceso ======
   const btnTerminar = document.getElementById('terminar-proceso');
@@ -190,7 +224,6 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('No hay códigos para enviar.');
         return;
       }
-      // Regex correcto (sin escapes extra)
       if (!/^https?:\/\/script\.google\.com\/macros\//.test(SCRIPT_URL)) {
         alert('Configura tu SCRIPT_URL de Google Apps Script.');
         return;
@@ -233,8 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
         alert(`Datos enviados correctamente. Hoja: ${result.sheet || '-'} | Col inicial: ${result.startCol || '-'}${destino}`);
 
         // Cerrar modal
-        const modal = document.getElementById('modal');
-        if (modal) modal.style.display = 'none';
+        closeModal();
 
         // (Opcional) limpiar después de enviar:
         // globalUnitsScanned = 0;
