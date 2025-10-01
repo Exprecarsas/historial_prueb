@@ -141,24 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ====== Modal ======
   const btnAbrir = document.getElementById('abrir-modal');
-  if (btnAbrir) {
-    btnAbrir.addEventListener('click', () => {
-      const modal = document.getElementById('modal');
-      if (modal) modal.style.display = 'flex';
-      const fechaEl = document.getElementById('fecha');
-      if (fechaEl) {
-        if (fechaEl.type === 'date') {
-          const d = new Date();
-          const pad = (n) => (n < 10 ? '0' + n : String(n));
-          fechaEl.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-        } else {
-          fechaEl.value = new Date().toLocaleDateString();
-        }
-      }
-    });
-  }
 
   const btnCerrar = document.getElementById('cerrar-modal');
   if (btnCerrar) {

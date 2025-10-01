@@ -35,7 +35,7 @@
 
   <!-- Campo de entrada + botón -->
   <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí..."/>
-  <button id="start-scanning">Iniciar cámara</button>
+  <button id="start-scanning">Iniciar</button>
 
   <!-- Botón de cámara opcional (lo mantenemos por si lo usabas) -->
   <button id="btn-abrir-camara"
@@ -68,25 +68,31 @@
     <button id="close-scanner" style="position:absolute; top:10px; right:10px; z-index:10000;">Cerrar</button>
   </div>
 
-  <!-- Modal -->
-  <div id="modal" class="modal" style="display:none;">
-    <div class="modal-content" style="max-width:520px;">
-      <h3>Información</h3>
-      <input type="text" id="placa" placeholder="Placa de Vehículo"/>
-      <input type="text" id="remitente" placeholder="Remitente"/>
-      <input type="date" id="fecha"/>
-      <select id="tipo">
+  <!-- Modal moderno -->
+<div id="modal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Información</h3>
+
+    <div class="form-row">
+      <input class="input" type="text" id="placa" placeholder="Placa de Vehículo">
+      <input class="input" type="text" id="remitente" placeholder="Remitente">
+      <!-- fecha como TEXTO solo lectura -->
+      <input class="input" type="text" id="fecha" readonly aria-readonly="true" placeholder="dd/mm/aaaa">
+      <select class="select" id="tipo">
         <option value="DESCARGUE">DESCARGUE</option>
         <option value="CARGUE">CARGUE</option>
         <option value="INVENTARIO">INVENTARIO</option>
         <option value="NOVEDADES">NOVEDADES</option>
       </select>
-      <button id="generar-reporte" style="background-color:#4CAF50; color:#fff; margin-top:10px;">
-        Enviar a Google Sheets <i class="fas fa-paper-plane"></i>
-      </button>
-      <button id="cerrar-modal" style="background-color:#cc414d; color:#fff; margin-top:10px;">Cerrar</button>
+    </div>
+
+    <div class="actions">
+      <button id="generar-reporte" class="btn btn-primary">Enviar a Google Sheets ✈️</button>
+      <button id="cerrar-modal" class="btn btn-danger">Cerrar</button>
     </div>
   </div>
+</div>
+
 
     <!-- Incluye las bibliotecas necesarias -->
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>

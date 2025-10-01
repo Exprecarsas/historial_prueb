@@ -1,282 +1,281 @@
-/* Estilos generales para todos los dispositivos */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
-    background-color: #f9f9f9;
+/* =========================
+   Variables y base
+   ========================= */
+:root{
+  --bg:#ffffff;
+  --bg-soft:#f9fafb;
+  --text:#111827;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --ring:rgba(18,113,255,.18);
+  --brand:#cc414d;      /* rojo corporativo */
+  --brand-dark:#b33a40;
+  --primary:#22c55e;    /* verde enviar */
+  --primary-dark:#1dad53;
+  --danger:#ef4444;     /* rojo cerrar */
+  --danger-dark:#d63b3b;
 }
 
-/* Estilo para el encabezado y la información de escaneo */
-#main-content {
-    margin-bottom: 20px;
+*{ box-sizing: border-box; }
+
+body{
+  font-family: Arial, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  margin:0;
+  padding:20px;
+  text-align:center;
+  background-color:#f9f9f9;
+  color:var(--text);
 }
 
-#logo-exprecar img {
-    margin-bottom: 10px;
+/* =========================
+   Encabezado / contador
+   ========================= */
+#main-content{ margin-bottom:20px; }
+#logo-exprecar img{ margin-bottom:10px; }
+
+h1{ font-size:2rem; margin:6px 0 10px; }
+
+h2#global-counter{
+  display:inline-block;
+  margin: 10px 0 20px;
+  padding: 10px 28px;
+  background: var(--brand);
+  color:#fff;
+  border-radius: 999px;
+  font-size:1.3rem;
+  font-weight:700;
 }
 
-h1 {
-    font-size: 2rem;
-    margin-bottom: 10px;
+/* =========================
+   Entrada y botón de cámara
+   ========================= */
+#barcodeInput{
+  width:min(680px, 92vw);
+  max-width: 680px;
+  height:48px;
+  padding:0 14px;
+  font-size:16px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fff;
+  outline:none;
+  transition: box-shadow .15s, border-color .15s;
+}
+#barcodeInput:focus{
+  border-color:#93c5fd;
+  box-shadow:0 0 0 4px var(--ring);
 }
 
-/* Ajustar el contador de unidades escaneadas */
-h2#global-counter {
-    background-color: #cc414d;
-    color: white;
-    padding: 10px 40px; /* Aumenta el espacio a los lados */
-    border-radius: 5px;
-    margin-bottom: 20px;
-    display: inline-block; /* Ajusta el ancho al contenido */
-    font-size: 1.5rem; /* Tamaño de fuente equilibrado */
-    text-align: center;
-    max-width: 80%; /* Esto permite que tenga un tamaño más grande, pero no ocupa todo el ancho */
+#start-scanning{
+  margin-left:10px;
+  height:48px;
+  padding:0 18px;
+  background:var(--brand);
+  color:#fff;
+  border:0;
+  border-radius:12px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  transition: filter .15s, transform .02s;
+}
+#start-scanning:hover{ filter:brightness(1.03); }
+#start-scanning:active{ transform: translateY(1px); }
+
+#btn-abrir-camara{
+  display:none;
+  position:absolute;
+  top:10px; right:10px;
+  z-index:1000;
+}
+#btn-abrir-camara img{ width:70px; height:70px; }
+
+/* =========================
+   Tabla historial
+   ========================= */
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+  font-size:16px;
+  text-align:center;
+  background:#fff;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,.06);
+}
+thead{ background:#b42e39; color:#fff; }
+table th, table td{
+  padding:12px;
+  border:1px solid #eee;
+}
+tbody tr:nth-child(even){ background:#f8fafc; }
+
+/* =========================
+   Botones generales
+   ========================= */
+button{
+  padding:10px;
+  font-size:16px;
+  margin:10px 0;
+  border:0;
+  border-radius:12px;
+  background:var(--brand);
+  color:#fff;
+  cursor:pointer;
+  transition: filter .15s, transform .02s;
+}
+button:hover{ filter:brightness(1.03); }
+button:active{ transform: translateY(1px); }
+
+/* abrir modal (arriba derecha) */
+#abrir-modal{
+  position:absolute;
+  top:10px; right:10px;
+  background:var(--primary);
+  padding:10px 14px;
+  font-size:15px;
+  border-radius:12px;
+  font-weight:700;
+}
+#abrir-modal:hover{ background:var(--primary-dark); }
+#abrir-modal i{ margin-left:6px; }
+
+#terminar-proceso{
+  background:var(--brand);
+  border-radius:12px;
+}
+#terminar-proceso:hover{ background:var(--brand-dark); }
+
+/* =========================
+   Modal moderno
+   ========================= */
+.modal{
+  position:fixed; inset:0;
+  display:none;                 /* se muestra con JS: display:flex */
+  align-items:center; justify-content:center;
+  background:rgba(0,0,0,.45);
+  padding:28px;
+  z-index:1000;
+}
+.modal-content{
+  width:min(560px, 92vw);
+  background:var(--bg);
+  border-radius:16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.28);
+  padding:22px 22px 18px;
+  border:1px solid rgba(0,0,0,.06);
+  text-align:left;
+  margin:auto;
+}
+.modal-content h3{
+  margin:0 0 12px 0;
+  text-align:center;
+  font-size:20px;
+  color:var(--text);
 }
 
-
-/* Campo de entrada y botón de escaneo */
-#barcodeInput {
-    padding: 10px;
-    font-size: 16px;
-    width: 70%;
-    max-width: 400px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+/* Inputs del modal */
+.modal-content input,
+.modal-content select{
+  width:100%;
+  height:46px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+  font-size:16px;
+  padding:0 14px;
+  margin:8px 0;
+  outline:none;
+  transition: box-shadow .15s, border-color .15s;
+}
+.modal-content input:focus,
+.modal-content select:focus{
+  border-color:#93c5fd;
+  box-shadow:0 0 0 4px var(--ring);
 }
 
-#start-scanning {
-    background-color: #cc414d;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-left: 10px;
+/* Fecha: solo lectura (sin selector) */
+.modal-content input[readonly]{
+  background: var(--bg-soft);
+  color:#374151;
+  cursor: default;
 }
 
-#start-scanning:hover {
-    background-color: #b33a40;
+/* Si por accidente queda como type="date", ocultamos el icono: */
+.modal-content input[type="date"]::-webkit-calendar-picker-indicator{
+  opacity:0; display:none; pointer-events:none;
 }
 
-/* Botón de abrir la cámara (oculto por defecto) */
-#btn-abrir-camara {
-    display: none;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
+/* Select más moderno con caret */
+.modal-content select{
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%236b7280" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/></svg>');
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  background-size:18px;
+  padding-right:38px;
 }
 
-#btn-abrir-camara img {
-    width: 70px;
-    height: 70px;
+/* Botones del modal */
+.modal-content button{
+  width:100%;
+  height:46px;
+  margin-top:10px;
+  border:0;
+  font-size:16px;
+  font-weight:700;
+  border-radius:12px;
+  color:#fff;
+}
+.modal-content #generar-reporte{ background:var(--primary); }
+.modal-content #generar-reporte:hover{ background:var(--primary-dark); }
+.modal-content #cerrar-modal{ background:var(--danger); }
+.modal-content #cerrar-modal:hover{ background:var(--danger-dark); }
+
+/* =========================
+   Escáner a pantalla completa
+   ========================= */
+#scanner-container{
+  position:fixed; inset:0;
+  width:100vw; height:100vh;
+  background:rgba(0,0,0,.9);
+  display:none;
+  align-items:center; justify-content:center;
+  z-index:9999;
+}
+#scanner-video{
+  width:90%;
+  max-width:600px;
+  height:auto;
+  border:3px solid #fff;
+  border-radius:12px;
+  box-shadow:0 12px 28px rgba(0,0,0,.35);
+}
+#focus-box{
+  position:absolute;
+  border:4px dashed #00ff00;
+  width:250px; height:250px;
+  box-sizing:border-box;
+  pointer-events:none;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  z-index:10000;
 }
 
-/* Tabla para mostrar los códigos escaneados */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    font-size: 16px;
-    text-align: center;
-    background-color: #fff;
+/* =========================
+   Responsive
+   ========================= */
+@media (max-width: 768px){
+  #barcodeInput{ width:90%; }
+  button{ width:auto; }
+  table{ font-size:14px; }
+  #abrir-modal{
+    top:70px;
+    right:10px;
+    padding:8px 10px;
+    font-size:12px;
+  }
+  #abrir-modal i{ font-size:12px; }
 }
-
-table th, table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-}
-
-thead {
-    background-color: #b42e39;
-    color: white;
-}
-
-tbody tr:nth-child(even) {
-    background-color: #bddb92ce;
-}
-
-/* Estilos para botones */
-button {
-    padding: 10px;
-    font-size: 16px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #cc414d;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #b33a40;
-}
-
-/* Botón para abrir modal (Descargar) */
-#abrir-modal {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #4CAF50;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 5px;
-}
-
-#abrir-modal i {
-    margin-left: 5px;
-}
-
-#abrir-modal:hover {
-    background-color: #45a049;
-}
-
-/* Botón para terminar proceso */
-#terminar-proceso {
-    background-color: #cc414d;
-    padding: 10px;
-    margin-top: 20px;
-    border-radius: 5px;
-}
-
-#terminar-proceso:hover {
-    background-color: #b33a40;
-}
-
-/* Modal para la información de la descarga */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
-    width: 90%;
-    max-width: 400px;
-}
-
-.modal-content input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-.modal-content button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.modal-content button#cerrar-modal {
-    background-color: #cc414d;
-}
-
-.modal-content button#cerrar-modal:hover {
-    background-color: #b33a40;
-}
-
-.modal-content button#generar-reporte {
-    background-color: #4CAF50;
-}
-
-.modal-content button#generar-reporte:hover {
-    background-color: #45a049;
-}
-
-/* Estilos responsivos para pantallas pequeñas */
-@media (max-width: 768px) {
-    #barcodeInput {
-        width: 90%;
-    }
-
-    button {
-        width: 90%;
-        margin: 5px auto;
-    }
-
-    table {
-        font-size: 14px;
-    }
-
-    #abrir-modal {
-        right: 5px;
-    }
-
-    .modal-content {
-        width: 90%;
-    }
-}
-
-/* Estilos para el contenedor del escáner */
-#scanner-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.9);
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    display: none;
-}
-
-/* Video del escáner */
-#scanner-video {
-    width: 90%;
-    max-width: 600px;
-    height: auto;
-    border: 3px solid #ffffff;
-    border-radius: 10px;
-}
-
-/* Cuadro de enfoque para el escáner */
-#focus-box {
-    position: absolute;
-    border: 4px dashed #00ff00;
-    width: 250px;
-    height: 250px;
-    box-sizing: border-box;
-    pointer-events: none;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10000;
-}
-/* En pantallas pequeñas (menores a 768px), reducir el tamaño del botón */
-@media (max-width: 768px) {
-    #abrir-modal {
-        top: 70px; /* Mueve el botón hacia abajo */
-        right: 10px;
-        padding: 6px; /* Reduce el padding para que sea más pequeño */
-        font-size: 12px; /* Reduce el tamaño de fuente */
-        width: 80px; /* Cambia el ancho del botón */
-    }
-
-    #abrir-modal i {
-        font-size: 12px; /* Ajusta el tamaño del ícono */
-    }
-}
-
