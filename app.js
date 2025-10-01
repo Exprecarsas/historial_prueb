@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let barcodeTimeout = null;  // temporizador de debounce
   let audioContext = null;    // Web Audio
 
-  // ====== Audio ======
+  // ====== Audio =====
   function initializeAudioContext() {
     if (!audioContext) {
       try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); }
