@@ -1,12 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
     // ====== Config ======
     const SCANNER_DELAY_MS = 400; // tiempo de espera tras última tecla del escáner
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJMg6JoAi4q4_iwq1cPjWhS2eayUX9ipCphEAJkWnLLswYMU8UziOqlsgfCpIKfak5hw/exec'; // <-- Pega aquí tu /exec
 
     // ====== Estado ======
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
-    let codigosCorrectos = []; // Códigos escaneados correctamente
-    let barcodeTimeout = null; // Variable para almacenar el temporizador
-    let audioContext = null; // Contexto de audio para generar tonos
+    let codigosCorrectos = [];  // Códigos escaneados correctamente
+    let barcodeTimeout = null;  // Variable para almacenar el temporizador
+    let audioContext = null;    // Contexto de audio para generar tonos
 
     // ====== Audio ======
     // Inicializar contexto de audio para generar tonos
@@ -57,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
             };
             const compressedData = LZString.compress(JSON.stringify(progressData));
             localStorage.setItem('scanProgress', compressedData);
-            // console.log("Datos comprimidos guardados en localStorage:", compressedData);
         } catch (e) {
             console.warn('No se pudo guardar en localStorage:', e);
         }
@@ -282,63 +282,91 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Generar reporte en Excel solo con el historial de códigos escaneados
+    // ====== ENVIAR A GOOGLE SHEETS (reemplaza Excel) ======
     const btnReporte = document.getElementById('generar-reporte');
     if (btnReporte) {
-        btnReporte.addEventListener('click', () => {
+        btnReporte.addEventListener('click', async () => {
             const placaEl = document.getElementById('placa');
             const remitenteEl = document.getElementById('remitente');
             const fechaEl = document.getElementById('fecha');
+            const tipoEl = document.getElementById('tipo'); // <select id="tipo"> CARGUE/DESCARGUE
 
             const placa = placaEl ? placaEl.value.trim() : '';
             const remitente = remitenteEl ? remitenteEl.value.trim() : '';
             const fecha = fechaEl ? fechaEl.value.trim() : '';
+            const tipo = tipoEl ? tipoEl.value.trim() : ''; // requerido
 
-            if (!placa || !remitente) {
-                alert("Por favor, completa todos los campos.");
+            if (!placa || !tipo) {
+                alert("Por favor, completa Placa y Tipo (CARGUE/DESCARGUE).");
                 return;
             }
             if (!codigosCorrectos.length) {
-                alert("No hay códigos para exportar.");
+                alert("No hay códigos para enviar.");
+                return;
+            }
+            if (!/^https?:\/\/script\\.google\\.com\\/macros\\//.test(SCRIPT_URL)) {
+                alert("Configura tu SCRIPT_URL de Google Apps Script.");
                 return;
             }
 
-            const reportData = [
-                ['Placa de Vehículo', placa],
-                ['Remitente', remitente],
-                ['Fecha de Descargue', fecha || new Date().toLocaleDateString()],
-                [],
-                // Encabezados alineados con los datos que se agregan abajo:
-                ['N°', 'Código Escaneado', 'Hora de Escaneo']
-            ];
+            const payload = {
+                meta: {
+                    placa,
+                    tipo,                 // CARGUE / DESCARGUE
+                    remitente,            // se escribe en la misma celda (2da línea)
+                    fecha,                // informativo; el backend usa timestamp_envio + regla 6am
+                    total_unidades: codigosCorrectos.length,
+                    timestamp_envio: new Date().toISOString()
+                },
+                datos: codigosCorrectos.map((item, index) => ({
+                    n: index + 1,
+                    codigo: item.codigo,
+                    hora: item.hora
+                }))
+            };
 
-            // Agregar los códigos escaneados al reporte
-            codigosCorrectos.forEach((item, index) => {
-                reportData.push([index + 1, item.codigo, item.hora]);
-            });
+            const original = btnReporte.textContent;
+            btnReporte.disabled = true;
+            btnReporte.textContent = 'Enviando...';
 
-            const ws = XLSX.utils.aoa_to_sheet(reportData);
-            // Anchos de columna sugeridos
-            ws['!cols'] = [{ wch: 5 }, { wch: 30 }, { wch: 16 }];
+            try {
+                const resp = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Historial Escaneo');
+                if (!resp.ok) {
+                    const text = await resp.text();
+                    throw new Error(`HTTP ${resp.status}: ${text}`);
+                }
 
-            // Reemplazar espacios y caracteres especiales en el nombre de archivo
-            const remitenteCleaned = (remitente || '').replace(/[^a-zA-Z0-9\-_.]/g, '_');
-            const fechaCleaned = (fecha || new Date().toLocaleDateString()).replace(/\//g, '-'); // Cambiar / por -
+                const result = await resp.json().catch(() => ({}));
+                alert(`Datos enviados correctamente. Hoja: ${result.sheet || '-'} | Col inicial: ${result.startCol || '-'}`);
 
-            // Nombre de archivo personalizado con remitente y fecha
-            const fileName = `reporte_${remitenteCleaned}_${fechaCleaned}.xlsx`;
+                // Cerrar modal
+                const modal = document.getElementById('modal');
+                if (modal) modal.style.display = 'none';
 
-            XLSX.writeFile(wb, fileName);
+                // (Opcional) Limpiar después de enviar:
+                // globalUnitsScanned = 0;
+                // codigosCorrectos = [];
+                // updateGlobalCounter();
+                // limpiarTabla();
+                // saveProgressToLocalStorage();
 
-            alert('Reporte generado correctamente.');
-            const modal = document.getElementById('modal');
-            if (modal) modal.style.display = 'none';
+            } catch (err) {
+                console.error('Error enviando a Sheets:', err);
+                alert('No se pudo enviar a Google Sheets. Revisa la consola para más detalles.');
+            } finally {
+                btnReporte.disabled = false;
+                btnReporte.textContent = original;
+            }
         });
     }
 
     // ====== Inicio ======
     restoreProgressFromLocalStorage();
 });
+
