@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   // ====== Config ======
   const SCANNER_DELAY_MS = 400; // tiempo de espera tras última tecla del escáner
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYAzE8Ur6SUEG8iIkwg-g_OMNi5lP6cy0nyZvA-kheT-N2tAlqY4NJEcmjYnFyHYUNnA/exec'; // <-- tu /exec
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-aqXHz7FAOXAWqbVURAxOaSowFVOQjmSgDlUgzyQiHdNBosXVo3H2HIH0937QyqzJ/exec'; // <-- tu /exec
 
   // ====== Estado ======
   let globalUnitsScanned = 0; // Contador global de unidades escaneadas
