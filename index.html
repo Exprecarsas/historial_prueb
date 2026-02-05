@@ -1,77 +1,92 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestión de Unidades Escaneadas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Unidades Escaneadas - Exprecar</title>
 
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="styles.css" />
 
   <!-- Persistencia comprimida -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 
   <!-- Íconos -->
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
   <!-- PWA -->
-  <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#cc414d"/>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#cc414d" />
 </head>
 
 <body>
+
   <div id="main-content">
-    <div id="logo-exprecar" align="left">
-      <img src="logo_exprecar (2).svg" width="150" height="80" alt="logo"/>
+    <div id="logo-exprecar">
+      <img src="logo_exprecar.svg" width="150" height="80" alt="Exprecar">
     </div>
+
     <div>
-      <img src="somos de aqui.png" width="120" height="120" alt="LOGO"/>
+      <img src="somos_de_aqui.png" width="120" height="120" alt="Somos de aquí">
     </div>
+
     <div>
       <h1>Escaneo de Unidades</h1>
       <h2 id="global-counter">Unidades Escaneadas: 0</h2>
     </div>
   </div>
 
-  <!-- Campo de entrada -->
-  <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí..." />
+  <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí..." autofocus />
 
-  <!-- Tabla -->
   <table id="tabla-codigos" border="1" style="margin-top:20px; width:100%; text-align:center;">
     <thead>
       <tr>
-        <th>Número</th>
-        <th>Código Escaneado</th>
+        <th>#</th>
+        <th>Código</th>
         <th>Hora</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <!-- Acciones -->
   <button id="abrir-modal" style="position:fixed; top:12px; right:12px; z-index:2000;">
     Enviar <i class="fas fa-paper-plane"></i>
   </button>
+
   <button id="terminar-proceso">Terminar Proceso</button>
 
-  <!-- Modal moderno -->
+  <!-- MODAL -->
   <div id="modal" class="modal" style="display:none;">
     <div class="modal-content">
-      <h3>Información</h3>
+      <h3>Información del Proceso</h3>
+
       <div class="form-row">
-        <input class="input" type="text" id="placa" placeholder="Placa de Vehículo">
-        <input class="input" type="text" id="remitente" placeholder="Remitente">
-        <!-- fecha SOLO lectura -->
-        <input class="input" type="text" id="fecha" readonly aria-readonly="true" placeholder="dd/mm/aaaa">
+
+        <select class="select" id="sede">
+          <option value="">Selecciona sede</option>
+          <option value="Giron">Girón</option>
+          <option value="Medellin">Medellín</option>
+          <option value="Bogota">Bogotá</option>
+          <option value="Cucuta">Cúcuta</option>
+        </select>
+
+        <input class="input" type="text" id="placa" placeholder="Placa del vehículo">
+
+        <input class="input" type="text" id="fecha" readonly>
+
         <select class="select" id="tipo">
           <option value="DESCARGUE">DESCARGUE</option>
           <option value="CARGUE">CARGUE</option>
           <option value="INVENTARIO">INVENTARIO</option>
           <option value="NOVEDADES">NOVEDADES</option>
         </select>
+
       </div>
+
       <div class="actions">
-        <button id="generar-reporte" class="btn btn-primary">Enviar a Google Sheets ✈️</button>
+        <button id="generar-reporte" class="btn btn-primary">
+          Enviar <i class="fas fa-cloud-upload-alt"></i>
+        </button>
         <button id="cerrar-modal" class="btn btn-danger">Cerrar</button>
       </div>
     </div>
@@ -91,5 +106,5 @@
     }
   </script>
 </body>
-</html>
 
+</html>
