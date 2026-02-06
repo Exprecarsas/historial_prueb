@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
           placa,
           sede,
           fecha_operativa: fecha,
-          unidades: codigosCorrectos.map(c => c.codigo)
+          unidades: codigosCorrectos
         })
       });
 
