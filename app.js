@@ -80,6 +80,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // ====== Escaneo ======
   function handleScan(code) {
     if (!code) return;
+
+    // Evitar duplicados exactos (misma lectura repetida)
+    const ya = codigosCorrectos.some(x => x.codigo === code);
+    if (ya) {
+      playTone(220, 200);
+      alert("Este código ya fue escaneado.");
+      return;
+    }
+
     const hora = horaActual();
     codigosCorrectos.push({ codigo: code, hora });
     globalUnitsScanned++;
@@ -90,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   const input = document.getElementById('barcodeInput');
+
   input.addEventListener('input', () => {
     clearTimeout(barcodeTimeout);
     barcodeTimeout = setTimeout(() => {
@@ -127,6 +137,18 @@ document.addEventListener('DOMContentLoaded', function () {
     firmaUltimoEnvio = null;
   };
 
+  // ====== Firma ======
+  function crearFirmaActual(sede, placa, tipo, fecha) {
+    return JSON.stringify({
+      sede,
+      placa,
+      tipo,
+      fecha,
+      // Importante: incluir código + hora para detectar cambios reales
+      unidades: codigosCorrectos.map(c => ({ codigo: c.codigo, hora: c.hora }))
+    });
+  }
+
   // ====== ENVIAR A API ======
   const btnEnviar = document.getElementById('generar-reporte');
 
@@ -149,24 +171,22 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    const firmaActual = JSON.stringify({
-      sede, placa, tipo, fecha,
-      unidades: codigosCorrectos.map(c => c.codigo)
-    });
+    const firmaActual = crearFirmaActual(sede, placa, tipo, fecha);
 
+    // Si es exactamente igual a lo último enviado (y fue exitoso), bloquear
     if (firmaUltimoEnvio === firmaActual) {
-      alert('Este proceso ya fue enviado.');
+      alert('Este proceso ya fue enviado. Si cambias algo, podrás enviarlo de nuevo.');
       return;
     }
 
     enviandoProceso = true;
-    firmaUltimoEnvio = firmaActual;
 
     btnEnviar.disabled = true;
     const textoOriginal = btnEnviar.innerHTML;
     btnEnviar.innerHTML = 'Enviando... ⏳';
 
     try {
+
       const resp = await fetch(API_GUARDAR, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -180,14 +200,18 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       const data = await resp.json();
-      if (!data.ok) throw new Error(data.error);
+      if (!data.ok) throw new Error(data.error || 'Error desconocido');
+
+      // ✅ SOLO aquí marcamos como enviado
+      firmaUltimoEnvio = firmaActual;
 
       alert(`Proceso guardado correctamente\nUnidades: ${data.total_unidades}`);
       modal.style.display = 'none';
 
     } catch (e) {
+      console.error(e);
       alert('Error enviando el proceso');
-      firmaUltimoEnvio = null;
+      // ❌ No tocamos firmaUltimoEnvio para no “bloquear” el envío
     } finally {
       enviandoProceso = false;
       btnEnviar.disabled = false;
