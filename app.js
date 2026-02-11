@@ -79,24 +79,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ====== Escaneo ======
   function handleScan(code) {
-    if (!code) return;
+  if (!code) return;
 
-    // Evitar duplicados exactos (misma lectura repetida)
-    const ya = codigosCorrectos.some(x => x.codigo === code);
+  const limpio = code.trim();
+  const partes = limpio.split('-');
+  const tieneSufijo = partes.length > 1;
+
+  // 🔹 Si tiene sufijo → NO permitir repetir exactamente el mismo
+  if (tieneSufijo) {
+    const ya = codigosCorrectos.some(x => x.codigo === limpio);
     if (ya) {
       playTone(220, 200);
-      alert("Este código ya fue escaneado.");
+      alert("Este subcódigo ya fue escaneado.");
       return;
     }
-
-    const hora = horaActual();
-    codigosCorrectos.push({ codigo: code, hora });
-    globalUnitsScanned++;
-    agregarFila(code, hora, codigosCorrectos.length);
-    updateCounter();
-    saveProgress();
-    playTone(880, 120);
   }
+
+  // 🔹 Si NO tiene sufijo → SÍ permitir repetidos
+  const hora = horaActual();
+  codigosCorrectos.push({ codigo: limpio, hora });
+  globalUnitsScanned++;
+  agregarFila(limpio, hora, codigosCorrectos.length);
+  updateCounter();
+  saveProgress();
+  playTone(880, 120);
+}
+
 
   const input = document.getElementById('barcodeInput');
 
