@@ -168,12 +168,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const placa = document.getElementById('placa').value.trim();
     const tipo  = document.getElementById('tipo').value;
     const fecha = document.getElementById('fecha').value;
+    const remitente = document.getElementById('remitente').value.trim().toUpperCase();
 
     if (!sede) { alert('Selecciona la sede'); return; }
     if ((tipo === 'CARGUE' || tipo === 'DESCARGUE') && !placa) {
       alert('La placa es obligatoria');
       return;
     }
+    if (!remitente) { 
+  alert('Ingresa el origen / remitente');
+  return;
+}
     if (!codigosCorrectos.length) {
       alert('No hay unidades escaneadas');
       return;
@@ -201,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
         body: JSON.stringify({
           tipo,
           placa,
+          remitente,
           sede,
           fecha_operativa: fecha,
           unidades: codigosCorrectos
