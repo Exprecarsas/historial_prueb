@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
     texto += `\nOmitidas: ${omitidas}`;
 
     if (procesoExistente) {
-      texto += `\nModo: Reenvío / proceso existente`;
+      texto += `\nModo: Reenvio / proceso existente`;
     } else {
       texto += `\nModo: Proceso nuevo`;
     }
